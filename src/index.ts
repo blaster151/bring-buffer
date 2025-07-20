@@ -55,7 +55,11 @@ class RingBuffer<T> {
             throw new Error("Cannot resize with fixed allocation policy");
           }
           this._resize();
-          break;
+          // Continue with normal push after resize
+          this.buffer[this.tail] = item;
+          this.tail = (this.tail + 1) % this.capacity;
+          this.full = this.head === this.tail;
+          return;
 
         // optionally: block until space available
       }
@@ -96,6 +100,7 @@ class RingBuffer<T> {
     const newBuffer = new Array(Math.ceil(newSize));
     const items = this._getFifo(); // Use FIFO to preserve order during resize
     this.buffer = newBuffer;
+    this.capacity = newBuffer.length; // Update capacity to match new buffer size
     this.head = 0;
     this.tail = items.length;
     this.full = false;
@@ -198,7 +203,12 @@ class RingBuffer<T> {
 // Export your library functionality here
 export const version = '1.0.0';
 
+// Export the RingBuffer class
+export { RingBuffer };
+export type { RingBufferOptions, FullPolicy, AllocPolicy, ReadPolicy };
+
 // Default export
 export default {
-  version
+  version,
+  RingBuffer
 }; 
